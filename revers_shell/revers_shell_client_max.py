@@ -1,9 +1,10 @@
 import os
 import socket
 import subprocess
-import pyautogui
-import pyaudio
 import wave
+
+import pyaudio
+import pyautogui
 
 
 def infinite_body():
