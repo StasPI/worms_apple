@@ -14,10 +14,16 @@ def download(client_socket):
     full_path = input('Give app to client file full path: ')
     client_socket.send(full_path.encode())
     filename = os.path.basename(full_path)
-    filesize = client_socket.recv(BUFFER_SIZE).decode()
+    filesize = client_socket.recv(BUFFER_SIZE)
     filesize = int(filesize)
     with open(filename, 'wb') as f:
         for _ in range(filesize):
+            # TODO
+            # Errors occur in Linux systems without 'sleeping' interruptions, the origin of
+            # which cannot be understood. In particular, the buffer doesn't reach the server
+            # in full. Perhaps there is a problem with the virtualization used for testing.
+            # is relevant for all additional functions
+            # time.sleep(0.00001)
             bytes_read = client_socket.recv(BUFFER_SIZE)
             if len(bytes_read) < BUFFER_SIZE:
                 f.write(bytes_read)
