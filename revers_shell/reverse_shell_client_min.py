@@ -6,7 +6,7 @@ from psutil import cpu_percent
 
 
 def all_func():
-    SERVER_HOST = '192.168.1.124'
+    SERVER_HOST = ''
     SERVER_PORT = 5003
     BUFFER_SIZE = 4096
     s = socket.socket()
