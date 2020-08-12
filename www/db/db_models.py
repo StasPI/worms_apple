@@ -1,7 +1,7 @@
-from sqlalchemy import Column, ForeignKey, Integer, String
+from sqlalchemy import Column, ForeignKey, Integer, String, BigInteger
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
-from sqlalchemy import create_engine
+from db_connect import db_engine
 
 Base = declarative_base()
 
@@ -9,11 +9,9 @@ Base = declarative_base()
 class RootZone(Base):
     __tablename__ = 'root_zone'
 
-    id = Column(Integer, primary_key=True)
+    id = Column(BigInteger, primary_key=True)
     name_zone = Column(String(64), nullable=False)
 
 
-engine = create_engine(
-    'postgresql+psycopg2://postgres:testpass@localhost:5432/www', echo=True)
-
+engine = db_engine()
 Base.metadata.create_all(engine)

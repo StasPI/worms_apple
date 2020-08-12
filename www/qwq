@@ -1,0 +1,16 @@
+test/                      # Корневая папка
+    packA/                 # Пакет packA
+        subA/              # Подпакет subA
+            __init__.py
+            sa1.py
+            sa2.py
+        __init__.py
+        a1.py
+        a2.py
+    packB/                 # Пакет packB (неявный пакет пространства имён)
+        b1.py
+        b2.py
+    math.py
+    random.py
+    other.py
+    start.py
